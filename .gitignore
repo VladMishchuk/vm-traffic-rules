@@ -7,3 +7,4 @@ functions/lib
 .env.example
 .firebase
 firebase-debug.log
+other
