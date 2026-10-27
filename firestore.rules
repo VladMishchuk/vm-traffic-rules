@@ -1,0 +1,127 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+    function isAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Reference Collections: read-only for signed-in users, write-only for admins
+    match /categories/{code} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /exam_sections/{sectionId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /questions/{questionId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /rule_sections/{sectionId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /rules/{ruleId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /glossary_terms/{termId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /sign_categories/{categoryId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /signs/{signId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /markings/{markingId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /traffic_lights/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /id_signs/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /badges/{badgeId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /meta/{metaId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // User Public Profiles (community tab, safe from leaking private emails)
+    match /public_profiles/{uid} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(uid) || isAdmin();
+    }
+
+    // User Private Profile & Subcollections
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create, update: if isOwner(uid) || isAdmin();
+      allow delete: if isAdmin();
+
+      match /test_sessions/{sessionId} {
+        allow read, write: if isOwner(uid) || isAdmin();
+      }
+      match /rule_mastery/{itemId} {
+        allow read, write: if isOwner(uid) || isAdmin();
+      }
+      match /mistakes/{questionId} {
+        allow read, write: if isOwner(uid) || isAdmin();
+      }
+      match /reading_progress/{articleId} {
+        allow read, write: if isOwner(uid) || isAdmin();
+      }
+      match /badges/{badgeId} {
+        allow read, write: if isOwner(uid) || isAdmin();
+      }
+      match /ai_questions/{questionId} {
+        allow read, write: if isOwner(uid) || isAdmin();
+      }
+      match /notifications/{notifId} {
+        allow read, write: if isOwner(uid) || isAdmin();
+      }
+    }
+
+    // Community interactions
+    match /comments/{commentId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && (resource.data.authorUid == request.auth.uid || isAdmin());
+    }
+
+    match /comment_votes/{voteId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    match /follows/{followId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    match /reports/{reportId} {
+      allow create: if isSignedIn();
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}

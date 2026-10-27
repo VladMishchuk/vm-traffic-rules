@@ -1,0 +1,31 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Official catalog bundles and media assets
+    // Require user authentication as requested
+    match /bundles/{allPaths=**} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+    match /questions/{allPaths=**} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+    match /knowledge/{allPaths=**} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    // User profile uploads (max 2MB, images only)
+    match /users/{userId}/{allPaths=**} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && request.auth.uid == userId
+        && request.resource.size < 2 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
