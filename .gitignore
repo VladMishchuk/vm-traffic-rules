@@ -8,3 +8,4 @@ functions/lib
 .firebase
 firebase-debug.log
 other
+.agent

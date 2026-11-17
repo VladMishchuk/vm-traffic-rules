@@ -12,6 +12,7 @@ import {
   Lock,
 } from 'lucide-react';
 import { DriverCategoryCode, RulesDatabase } from '@/core/types';
+import { testModeRegistry } from '@/modules/testing';
 import { ModeInfoModalData } from './ModeInfoModal';
 
 interface StudyModeCardsProps {
@@ -63,17 +64,7 @@ export const StudyModeCards: React.FC<StudyModeCardsProps> = ({
               <button
                 type="button"
                 onClick={() =>
-                  onOpenModeInfo({
-                    title: 'Іспит як у СЦ МВС',
-                    badge: '20 питань • 20 хвилин • до 2 помилок',
-                    description:
-                      'Повна симуляція реального теоретичного іспиту в Головному сервісному центрі МВС України. Білет формується за офіційною пропорцією: 10 питань з ПДР, 4 з безпеки руху, 4 з будови ТЗ та основ права, 2 з домедичної допомоги.',
-                    details: [
-                      'Жорсткий таймер 20 хвилин (червона індикація на останній хвилині).',
-                      'Допускається максимум 2 помилки; на 3-й помилці іспит достроково припиняється.',
-                      'Підказки та пояснення під час іспиту вимкнені — повний розбір доступний після завершення.',
-                    ],
-                  })
+                  onOpenModeInfo(testModeRegistry.getStrategy('exam').metadata)
                 }
                 className="w-8 h-8 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:bg-blue-500/10 text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 flex items-center justify-center transition cursor-pointer"
                 title="Детальний опис режиму"
@@ -83,7 +74,9 @@ export const StudyModeCards: React.FC<StudyModeCardsProps> = ({
             </div>
           </div>
 
-          <h3 className="text-lg font-bold pt-1">Іспит як у СЦ МВС</h3>
+          <h3 className="text-lg font-bold pt-1">
+            {testModeRegistry.getStrategy('exam').metadata.title}
+          </h3>
 
           <div className="flex items-center gap-1.5 pt-1">
             <span className="text-xs text-slate-500 dark:text-slate-400">Категорія:</span>
@@ -128,17 +121,7 @@ export const StudyModeCards: React.FC<StudyModeCardsProps> = ({
               <button
                 type="button"
                 onClick={() =>
-                  onOpenModeInfo({
-                    title: 'Тест за обраними темами',
-                    badge: 'Цільове тренування розділів ПДР',
-                    description:
-                      'Дозволяє обрати один або декілька конкретних тематичних розділів ПДР України для поглибленого відпрацювання без обмеження за часом.',
-                    details: [
-                      'Миттєва перевірка відповіді з офіційним обґрунтуванням та посиланням на пункт ПДР.',
-                      'Можливість скористатися підказкою або переглянути картку дорожнього знака прямо в тесті.',
-                      'Результати кожної відповіді оновлюють ваш рівень засвоєння теми в Аналітиці.',
-                    ],
-                  })
+                  onOpenModeInfo(testModeRegistry.getStrategy('topic').metadata)
                 }
                 className="w-8 h-8 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-indigo-500 hover:bg-indigo-500/10 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center justify-center transition cursor-pointer"
                 title="Детальний опис режиму"
@@ -147,7 +130,9 @@ export const StudyModeCards: React.FC<StudyModeCardsProps> = ({
               </button>
             </div>
           </div>
-          <h3 className="text-lg font-bold pt-1">Тест за обраними темами</h3>
+          <h3 className="text-lg font-bold pt-1">
+            {testModeRegistry.getStrategy('topic').metadata.title}
+          </h3>
         </div>
         <button
           type="button"
@@ -190,17 +175,9 @@ export const StudyModeCards: React.FC<StudyModeCardsProps> = ({
               <button
                 type="button"
                 onClick={() =>
-                  onOpenModeInfo({
-                    title: 'Адаптивний тест',
-                    badge: '70% слабкі теми + 30% інтервальне повторення',
-                    description:
-                      'Інтелектуальний адаптивний режим, що будує персональну сесію на основі останніх 5 спроб по кожному пункту ПДР та кривої забування Еббінгауза.',
-                    details: [
-                      '70% питань підбираються з ваших найслабших правил і прострочених інтервалів повторення.',
-                      '30% питань — контрольна перевірка вже вивчених тем для закріплення у довготривалій пам’яті.',
-                      'Включає інтерактивні динамічні 2D-сцени перехресть зі зміненими умовами пріоритету.',
-                    ],
-                  })
+                  onOpenModeInfo(
+                    testModeRegistry.getStrategy('ai_adaptive').metadata
+                  )
                 }
                 className="w-8 h-8 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-violet-500 hover:bg-violet-500/10 text-slate-500 hover:text-violet-600 dark:hover:text-violet-400 flex items-center justify-center transition cursor-pointer"
                 title="Детальний опис режиму"
@@ -210,7 +187,9 @@ export const StudyModeCards: React.FC<StudyModeCardsProps> = ({
             </div>
           </div>
 
-          <h3 className="text-lg font-bold pt-1">Адаптивний тест</h3>
+          <h3 className="text-lg font-bold pt-1">
+            {testModeRegistry.getStrategy('ai_adaptive').metadata.title}
+          </h3>
         </div>
 
         <button
@@ -264,16 +243,9 @@ export const StudyModeCards: React.FC<StudyModeCardsProps> = ({
               <button
                 type="button"
                 onClick={() =>
-                  onOpenModeInfo({
-                    title: 'Робота над помилками',
-                    badge: 'Банк складних питань',
-                    description:
-                      'Формує цільову вибірку з 20 питань, у яких ви раніше припустилися помилки або скористалися підказкою під час навчання.',
-                    details: [
-                      'Питання автоматично додаються до Банку помилок при неправильній відповіді.',
-                      'Після успішної правильної відповіді без підказки питання вилучається з активного списку помилок.',
-                    ],
-                  })
+                  onOpenModeInfo(
+                    testModeRegistry.getStrategy('mistakes').metadata
+                  )
                 }
                 className="w-8 h-8 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-rose-500 hover:bg-rose-500/10 text-slate-500 hover:text-rose-500 flex items-center justify-center transition cursor-pointer"
                 title="Детальний опис режиму"
@@ -283,7 +255,9 @@ export const StudyModeCards: React.FC<StudyModeCardsProps> = ({
             </div>
           </div>
 
-          <h3 className="text-lg font-bold pt-1">Робота над помилками</h3>
+          <h3 className="text-lg font-bold pt-1">
+            {testModeRegistry.getStrategy('mistakes').metadata.title}
+          </h3>
         </div>
 
         <button
@@ -321,16 +295,7 @@ export const StudyModeCards: React.FC<StudyModeCardsProps> = ({
               <button
                 type="button"
                 onClick={() =>
-                  onOpenModeInfo({
-                    title: 'Тест із текстового запиту',
-                    badge: 'Генерація за вільним описом (Gemini AI + 2D)',
-                    description:
-                      'Вільно опишіть дорожню ситуацію, яку хочете потренувати (наприклад: «кругові перехрестя з трамваями» або «сигнали регулювальника вночі»), і ШІ сформує індивідуальний тест.',
-                    details: [
-                      'Генерує інтерактивні векторні 2D-сцени дорожніх ситуацій із траєкторіями та знаками.',
-                      'Добирає найбільш релевантні офіційні питання ПДР України за змістом вашого запиту.',
-                    ],
-                  })
+                  onOpenModeInfo(testModeRegistry.getStrategy('prompt').metadata)
                 }
                 className="w-8 h-8 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-emerald-500 hover:bg-emerald-500/10 text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 flex items-center justify-center transition cursor-pointer"
                 title="Детальний опис режиму"
@@ -339,7 +304,9 @@ export const StudyModeCards: React.FC<StudyModeCardsProps> = ({
               </button>
             </div>
           </div>
-          <h3 className="text-lg font-bold pt-1">Тест із текстового запиту</h3>
+          <h3 className="text-lg font-bold pt-1">
+            {testModeRegistry.getStrategy('prompt').metadata.title}
+          </h3>
         </div>
         <button
           type="button"

@@ -7,13 +7,10 @@ import {
   loadQuestions,
   loadRules,
   getAvailableSectionsForCategories,
-  matchesCategories,
 } from '@/lib/dataService';
-import { generateOfficialExamTicket } from '@/components/testing';
-import { buildAdaptiveSpacedSession } from '@/components/analytics';
-import { generatePromptQuestionsWithAi } from '@/lib/ai-generator';
+import { testModeRegistry } from '@/modules/testing';
 import { useAppStore } from '@/store/useAppStore';
-import { DriverCategoryCode } from '@/core/types';
+import { DriverCategoryCode, TestMode } from '@/core/types';
 
 import { ColdStartBanner } from '../components/ColdStartBanner';
 import { DailyStreakWidget } from '../components/DailyStreakWidget';
@@ -60,9 +57,6 @@ export default function DashboardPage() {
     questions,
     user.selectedCategories
   );
-  const categoryQuestions = questions.filter((q) =>
-    matchesCategories(q.categories, user.selectedCategories)
-  );
 
   const activeExamCat = user.selectedCategories.includes(examTargetCat)
     ? examTargetCat
@@ -94,69 +88,52 @@ export default function DashboardPage() {
         ]
       : [{ name: 'Ще немає спроб', value: 100, color: '#64748b' }];
 
-  const startDiagnosticTest = () => {
-    const targetCat = user.selectedCategories[0] || 'B';
-    const ticket = generateOfficialExamTicket(questions, targetCat);
-    if (ticket.length === 0) {
-      toast.error('Не вдалося завантажити тест');
-      return;
-    }
-    startTestSession({
-      id: `diag_${Date.now()}`,
-      mode: 'diagnostic',
-      title: 'Діагностичний тест ПДР',
-      subtitle:
-        'Калібрування початкового профілю знань для розблокування адаптивного тесту',
-      targetCategory: targetCat,
-      questions: ticket,
-      isStrictExam: false,
+  const launchStrategySession = async (
+    mode: TestMode,
+    extra?: { selectedTopics?: string[]; promptText?: string }
+  ) => {
+    const targetCategory =
+      mode === 'diagnostic'
+        ? user.selectedCategories[0] || 'B'
+        : activeExamCat;
+
+    const sessionConfig = await testModeRegistry.buildSession(mode, {
+      questions,
+      targetCategory,
+      selectedCategories: user.selectedCategories,
+      masteryMap,
+      wrongQuestionIds: user.wrongQuestionIds,
+      selectedTopics: extra?.selectedTopics,
+      promptText: extra?.promptText,
     });
+
+    if (!sessionConfig.questions || sessionConfig.questions.length === 0) {
+      toast.error('Не вдалося завантажити тест');
+      return false;
+    }
+
+    startTestSession(sessionConfig);
     navigate('/test');
+    return true;
+  };
+
+  const startDiagnosticTest = () => {
+    void launchStrategySession('diagnostic');
   };
 
   const startOfficialExam = () => {
-    const ticket = generateOfficialExamTicket(questions, activeExamCat);
-    if (ticket.length === 0) {
-      toast.error('Не вдалося завантажити тест');
-      return;
-    }
-    startTestSession({
-      id: `exam_${Date.now()}`,
-      mode: 'exam',
-      title: `Іспит як у СЦ МВС`,
-      subtitle: '20 питань • 20 хвилин • Максимум 2 помилки',
-      targetCategory: activeExamCat,
-      questions: ticket,
-      isStrictExam: true,
-      timeLimitSeconds: 1200,
-    });
-    navigate('/test');
+    void launchStrategySession('exam');
   };
 
-  const startTopicTest = () => {
+  const startTopicTest = async () => {
     if (selectedTopics.length === 0) {
       toast.error('Оберіть хоча б одну тему ПДР');
       return;
     }
-    const pool = categoryQuestions.filter((q) =>
-      selectedTopics.includes(String(q.section))
-    );
-    const shuffled = [...pool].sort(() => Math.random() - 0.5).slice(0, 20);
-    if (shuffled.length === 0) {
-      toast.error('Не вдалося завантажити тест');
-      return;
+    const ok = await launchStrategySession('topic', { selectedTopics });
+    if (ok) {
+      setTopicPickerOpen(false);
     }
-    setTopicPickerOpen(false);
-    startTestSession({
-      id: `topic_${Date.now()}`,
-      mode: 'topic',
-      title: 'Тест за обраними темами',
-      subtitle: `Обрано розділів: ${selectedTopics.length}`,
-      targetCategory: activeExamCat,
-      questions: shuffled,
-      isStrictExam: false,
-    });
-    navigate('/test');
   };
 
   const startMistakesTest = () => {
@@ -166,23 +143,7 @@ export default function DashboardPage() {
       );
       return;
     }
-    const wrongPool = categoryQuestions.filter((q) =>
-      user.wrongQuestionIds.includes(q.id)
-    );
-    if (wrongPool.length === 0) {
-      toast.error('Не вдалося завантажити тест');
-      return;
-    }
-    startTestSession({
-      id: `mistakes_${Date.now()}`,
-      mode: 'mistakes',
-      title: 'Робота над помилками',
-      subtitle: `Відпрацювання складних питань (${wrongPool.slice(0, 20).length} завдань)`,
-      targetCategory: activeExamCat,
-      questions: wrongPool.slice(0, 20),
-      isStrictExam: false,
-    });
-    navigate('/test');
+    void launchStrategySession('mistakes');
   };
 
   const startAiRecommendedTest = () => {
@@ -192,28 +153,7 @@ export default function DashboardPage() {
       );
       return;
     }
-    const finalQuestions = buildAdaptiveSpacedSession(
-      questions,
-      masteryMap,
-      user.wrongQuestionIds,
-      user.selectedCategories,
-      20
-    );
-    if (finalQuestions.length === 0) {
-      toast.error('Не вдалося завантажити тест');
-      return;
-    }
-
-    startTestSession({
-      id: `ai_${Date.now()}`,
-      mode: 'ai_adaptive',
-      title: 'Адаптивний тест',
-      subtitle: '70% слабкі теми + 30% інтервальне повторення',
-      targetCategory: activeExamCat,
-      questions: finalQuestions,
-      isStrictExam: false,
-    });
-    navigate('/test');
+    void launchStrategySession('ai_adaptive');
   };
 
   const handleGeneratePromptTest = async () => {
@@ -224,33 +164,17 @@ export default function DashboardPage() {
     setGeneratingPrompt(true);
 
     try {
-      const { questions: generatedList } =
-        await generatePromptQuestionsWithAi({
-          prompt: promptText.trim(),
-          selectedCategories: user.selectedCategories,
-          count: 10,
-        });
-
-      if (!generatedList || generatedList.length === 0) {
-        throw new Error('Empty test questions');
-      }
-
-      setGeneratingPrompt(false);
-      setPromptModalOpen(false);
-      toast.success(
-        'Згенеровано нові питання та 2D-сцени через Gemini AI!'
-      );
-      startTestSession({
-        id: `prompt_${Date.now()}`,
-        mode: 'prompt',
-        title: `ШІ Промпт-тест: «${promptText.slice(0, 42)}»`,
-        subtitle: 'Інтерактивні 2D-сцени + цільові питання ПДР',
-        targetCategory: activeExamCat,
-        questions: generatedList,
-        isStrictExam: false,
+      const ok = await launchStrategySession('prompt', {
+        promptText: promptText.trim(),
       });
-      setPromptText('');
-      navigate('/test');
+      setGeneratingPrompt(false);
+      if (ok) {
+        setPromptModalOpen(false);
+        toast.success(
+          'Згенеровано нові питання та 2D-сцени через Gemini AI!'
+        );
+        setPromptText('');
+      }
     } catch {
       setGeneratingPrompt(false);
       toast.error('Не вдалося завантажити тест');

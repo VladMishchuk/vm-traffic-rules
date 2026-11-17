@@ -14,52 +14,10 @@ import {
   batchSaveRuleMasteryToFirestore,
   saveRuleMasteryToFirestore,
 } from '@/lib/firestoreService';
+import { computeSpacedMastery } from '@/modules/adaptive-learning';
 import { AppState, TestingSlice } from './types';
 
-/**
- * Calculates mastery score M_r based on weighted last N=5 attempts
- * and updates Spaced Practice interval in days.
- */
-export function computeSpacedMastery(
-  prev: RuleMasteryRecord | undefined,
-  itemId: string,
-  section: string,
-  isCorrect: boolean
-): RuleMasteryRecord {
-  const prevAttempts = prev?.recentAttempts ?? [];
-  const recentAttempts = [...prevAttempts, isCorrect].slice(-5);
-
-  let weightedSum = 0;
-  let weightTotal = 0;
-  recentAttempts.forEach((val, idx) => {
-    const w = idx + 1;
-    weightTotal += w;
-    if (val) weightedSum += w;
-  });
-  const masteryScore = weightTotal > 0 ? weightedSum / weightTotal : 0;
-
-  let intervalDays = prev?.intervalDays ?? 0;
-  if (!isCorrect) {
-    intervalDays = 0;
-  } else {
-    intervalDays =
-      intervalDays === 0 ? 1 : Math.ceil(intervalDays * (1.5 + masteryScore));
-  }
-
-  const nextDate = new Date();
-  nextDate.setDate(nextDate.getDate() + intervalDays);
-
-  return {
-    itemId,
-    section,
-    recentAttempts,
-    masteryScore: Number(masteryScore.toFixed(2)),
-    intervalDays,
-    nextReviewAt: nextDate.toISOString(),
-    totalAttempts: (prev?.totalAttempts ?? 0) + 1,
-    correctAttempts: (prev?.correctAttempts ?? 0) + (isCorrect ? 1 : 0),
-  };
-}
+export { computeSpacedMastery };
 
 export const createTestingSlice: StateCreator<AppState, [], [], TestingSlice> = (
   set
