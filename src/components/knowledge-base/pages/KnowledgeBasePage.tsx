@@ -155,10 +155,15 @@ export default function KnowledgeBasePage() {
     });
 
     if (pool.length === 0) {
-      pool = catQuestions;
+      toast.error('Не вдалося завантажити тест');
+      return;
     }
 
     const sample = [...pool].sort(() => Math.random() - 0.5).slice(0, 8);
+    if (sample.length === 0) {
+      toast.error('Не вдалося завантажити тест');
+      return;
+    }
     startTestSession({
       id: `kb_practice_${Date.now()}`,
       mode: 'knowledge_check',

@@ -101,11 +101,11 @@ export const PromptTestModal: React.FC<PromptTestModalProps> = ({
                 type="password"
                 value={geminiApiKeyInput}
                 onChange={(e) => onChangeKeyInput(e.target.value)}
-                placeholder="AIzaSy... (якщо порожньо — працює вбудований 2D-двигун)"
+                placeholder="AIzaSy... (введіть ваш Gemini API Key)"
                 className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs"
               />
               <p className="text-[11px] text-slate-400">
-                За замовчуванням система миттєво генерує 2D-сцени за допомогою вбудованого двигуна сценаріїв ПДР.
+                Питання та 2D-сцени генеруються безпосередньо моделлю Google Gemini.
               </p>
             </div>
           )}

@@ -111,7 +111,10 @@ export default function AnalyticsPage() {
         matchesCategories(q.categories, user.selectedCategories)
     );
     const sample = [...pool].sort(() => Math.random() - 0.5).slice(0, 15);
-    if (sample.length === 0) return;
+    if (sample.length === 0) {
+      toast.error('Не вдалося завантажити тест');
+      return;
+    }
 
     startTestSession({
       id: `sec_train_${Date.now()}`,
@@ -127,7 +130,7 @@ export default function AnalyticsPage() {
 
   const handleStartMistakesReview = () => {
     if (wrongQuestionsList.length === 0) {
-      toast.info('Банк помилок порожній!');
+      toast.error('Не вдалося завантажити тест');
       return;
     }
     startTestSession({
@@ -144,7 +147,7 @@ export default function AnalyticsPage() {
 
   const handleStartDueReview = () => {
     if (dueRules.length === 0) {
-      toast.info('Немає правил для термінового повторення сьогодні!');
+      toast.error('Не вдалося завантажити тест');
       return;
     }
     const dueItemIds = new Set(dueRules.map((r) => r.itemId));
@@ -157,13 +160,12 @@ export default function AnalyticsPage() {
         q.rule_ids?.some((rid) => dueItemIds.has(rid))
     );
 
-    const questionsToUse =
-      matchingQuestions.length > 0
-        ? matchingQuestions.sort(() => Math.random() - 0.5).slice(0, 20)
-        : wrongQuestionsList.slice(0, 20);
+    const questionsToUse = matchingQuestions
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 20);
 
     if (questionsToUse.length === 0) {
-      toast.info('Не знайдено питань для обраних категорій!');
+      toast.error('Не вдалося завантажити тест');
       return;
     }
 

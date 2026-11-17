@@ -105,6 +105,10 @@ export default function DashboardPage() {
   const startDiagnosticTest = () => {
     const targetCat = user.selectedCategories[0] || 'B';
     const ticket = generateOfficialExamTicket(questions, targetCat);
+    if (ticket.length === 0) {
+      toast.error('Не вдалося завантажити тест');
+      return;
+    }
     startTestSession({
       id: `diag_${Date.now()}`,
       mode: 'diagnostic',
@@ -120,6 +124,10 @@ export default function DashboardPage() {
 
   const startOfficialExam = () => {
     const ticket = generateOfficialExamTicket(questions, activeExamCat);
+    if (ticket.length === 0) {
+      toast.error('Не вдалося завантажити тест');
+      return;
+    }
     startTestSession({
       id: `exam_${Date.now()}`,
       mode: 'exam',
@@ -142,6 +150,10 @@ export default function DashboardPage() {
       selectedTopics.includes(String(q.section))
     );
     const shuffled = [...pool].sort(() => Math.random() - 0.5).slice(0, 20);
+    if (shuffled.length === 0) {
+      toast.error('Не вдалося завантажити тест');
+      return;
+    }
     setTopicPickerOpen(false);
     startTestSession({
       id: `topic_${Date.now()}`,
@@ -166,10 +178,7 @@ export default function DashboardPage() {
       user.wrongQuestionIds.includes(q.id)
     );
     if (wrongPool.length === 0) {
-      toast.success(
-        'У вас наразі немає невідпрацьованих помилок! Запускаємо контрольний підбір.'
-      );
-      startDiagnosticTest();
+      toast.error('Не вдалося завантажити тест');
       return;
     }
     startTestSession({
@@ -198,6 +207,10 @@ export default function DashboardPage() {
       user.selectedCategories,
       20
     );
+    if (finalQuestions.length === 0) {
+      toast.error('Не вдалося завантажити тест');
+      return;
+    }
 
     startTestSession({
       id: `ai_${Date.now()}`,
@@ -220,7 +233,7 @@ export default function DashboardPage() {
     setGeneratingPrompt(true);
 
     try {
-      const { questions: generatedList, source } =
+      const { questions: generatedList } =
         await generatePromptQuestionsWithAi({
           prompt: promptText.trim(),
           selectedCategories: user.selectedCategories,
@@ -228,12 +241,14 @@ export default function DashboardPage() {
           count: 10,
         });
 
+      if (!generatedList || generatedList.length === 0) {
+        throw new Error('Empty test questions');
+      }
+
       setGeneratingPrompt(false);
       setPromptModalOpen(false);
       toast.success(
-        source === 'gemini_live'
-          ? 'Згенеровано нові питання та 2D-сцени через Gemini AI!'
-          : 'Згенеровано тест з інтерактивними 2D-сценами перехресть!'
+        'Згенеровано нові питання та 2D-сцени через Gemini AI!'
       );
       startTestSession({
         id: `prompt_${Date.now()}`,
@@ -248,7 +263,7 @@ export default function DashboardPage() {
       navigate('/test');
     } catch {
       setGeneratingPrompt(false);
-      toast.error('Не вдалося згенерувати тест. Спробуйте інший запит.');
+      toast.error('Не вдалося завантажити тест');
     }
   };
 

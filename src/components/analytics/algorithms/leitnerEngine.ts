@@ -4,7 +4,6 @@ import {
   RuleMasteryRecord,
 } from '@/core/types';
 import { matchesCategories } from '@/lib/dataService';
-import { injectDynamic2dScenariosIntoAdaptiveSession } from '@/lib/ai-generator';
 import { shuffleArray } from '@/core/utils/shuffle';
 
 export type MasteryStatus = 'mastered' | 'learning' | 'weak' | 'untested';
@@ -257,10 +256,5 @@ export function buildAdaptiveSpacedSession(
     combined.push(...filler);
   }
 
-  return injectDynamic2dScenariosIntoAdaptiveSession(
-    combined,
-    masteryMap,
-    selectedCategories,
-    totalCount
-  );
+  return combined.slice(0, totalCount);
 }
