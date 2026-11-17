@@ -2,7 +2,7 @@ import { OfficialQuestion } from '@/core/types';
 
 /**
  * Rich library of AI-synthesized questions with deterministic 2D vector road scenes (RoadSceneConfig).
- * Used immediately in "Рекомендований ШІ" and "Тест за власним запитом (Промпт)"
+ * Used immediately in "Адаптивний тест" and "Тест за власним запитом (Промпт)"
  * and as a zero-latency fallback when VITE_GEMINI_API_KEY is not set.
  */
 export const CURATED_AI_SCENARIOS: OfficialQuestion[] = [

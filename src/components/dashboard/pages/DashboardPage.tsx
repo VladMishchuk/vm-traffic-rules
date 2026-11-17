@@ -110,7 +110,7 @@ export default function DashboardPage() {
       mode: 'diagnostic',
       title: 'Діагностичний тест ПДР',
       subtitle:
-        'Калібрування початкового профілю знань для розблокування адаптивного ШІ',
+        'Калібрування початкового профілю знань для розблокування адаптивного тесту',
       targetCategory: targetCat,
       questions: ticket,
       isStrictExam: false,
@@ -187,7 +187,7 @@ export default function DashboardPage() {
   const startAiRecommendedTest = () => {
     if (isColdStart) {
       toast.warning(
-        "Режим 'Рекомендований ШІ' заблоковано. Пройдіть 'Діагностичний тест' або 'Іспит' для збору початкової аналітики."
+        "Режим 'Адаптивний тест' заблоковано. Пройдіть 'Діагностичний тест' або 'Іспит' для збору початкової аналітики."
       );
       return;
     }
@@ -202,7 +202,7 @@ export default function DashboardPage() {
     startTestSession({
       id: `ai_${Date.now()}`,
       mode: 'ai_adaptive',
-      title: 'Рекомендований ШІ',
+      title: 'Адаптивний тест',
       subtitle: '70% слабкі теми + 30% інтервальне повторення',
       targetCategory: activeExamCat,
       questions: finalQuestions,

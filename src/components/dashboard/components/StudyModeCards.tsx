@@ -191,7 +191,7 @@ export const StudyModeCards: React.FC<StudyModeCardsProps> = ({
                 type="button"
                 onClick={() =>
                   onOpenModeInfo({
-                    title: 'Рекомендований ШІ',
+                    title: 'Адаптивний тест',
                     badge: '70% слабкі теми + 30% інтервальне повторення',
                     description:
                       'Інтелектуальний адаптивний режим, що будує персональну сесію на основі останніх 5 спроб по кожному пункту ПДР та кривої забування Еббінгауза.',
@@ -210,7 +210,7 @@ export const StudyModeCards: React.FC<StudyModeCardsProps> = ({
             </div>
           </div>
 
-          <h3 className="text-lg font-bold pt-1">Рекомендований ШІ</h3>
+          <h3 className="text-lg font-bold pt-1">Адаптивний тест</h3>
         </div>
 
         <button
@@ -219,7 +219,7 @@ export const StudyModeCards: React.FC<StudyModeCardsProps> = ({
           title={
             isColdStart
               ? "Щоб система могла підібрати питання персонально для вас, пройдіть один 'Іспит' або 'Тест за темами'"
-              : 'Запустити адаптивний тест ШІ'
+              : 'Запустити адаптивний тест'
           }
           className={`mt-6 w-full py-3 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition cursor-pointer ${
             isColdStart
@@ -229,7 +229,7 @@ export const StudyModeCards: React.FC<StudyModeCardsProps> = ({
         >
           {isColdStart && <Lock className="w-4 h-4" />}
           <span>
-            {isColdStart ? 'Заблоковано (Холодний старт)' : 'Запустити ШІ-тест'}
+            {isColdStart ? 'Заблоковано (Холодний старт)' : 'Запустити адаптивний тест'}
           </span>
         </button>
       </div>
