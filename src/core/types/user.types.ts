@@ -1,14 +1,5 @@
 import { DriverCategoryCode } from './category.types';
 
-export interface AppNotification {
-  id: string;
-  title: string;
-  message: string;
-  type: 'badge' | 'social' | 'system';
-  isRead: boolean;
-  createdAt: string;
-}
-
 export interface BadgeDefinition {
   id: string;
   title: string;
@@ -40,7 +31,6 @@ export interface UserProfile {
     autoExplainOnError: boolean;
     defaultTopics: string[];
     theme?: 'light' | 'dark';
-    geminiApiKey?: string;
   };
 }
 

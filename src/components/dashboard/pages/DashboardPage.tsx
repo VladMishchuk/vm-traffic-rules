@@ -7,15 +7,11 @@ import {
   loadQuestions,
   loadRules,
   getAvailableSectionsForCategories,
-  generateOfficialExamTicket,
   matchesCategories,
 } from '@/lib/dataService';
+import { generateOfficialExamTicket } from '@/components/testing';
 import { buildAdaptiveSpacedSession } from '@/components/analytics';
-import {
-  generatePromptQuestionsWithAi,
-  getStoredGeminiApiKey,
-  setStoredGeminiApiKey,
-} from '@/lib/ai-generator';
+import { generatePromptQuestionsWithAi } from '@/lib/ai-generator';
 import { useAppStore } from '@/store/useAppStore';
 import { DriverCategoryCode } from '@/core/types';
 
@@ -48,10 +44,6 @@ export default function DashboardPage() {
   const [promptModalOpen, setPromptModalOpen] = useState(false);
   const [promptText, setPromptText] = useState('');
   const [generatingPrompt, setGeneratingPrompt] = useState(false);
-  const [geminiApiKeyInput, setGeminiApiKeyInput] = useState(
-    () => getStoredGeminiApiKey()
-  );
-  const [showKeyConfig, setShowKeyConfig] = useState(false);
   const [modeInfoModal, setModeInfoModal] = useState<ModeInfoModalData | null>(null);
 
   const { data: questions = [], isLoading: loadingQ } = useQuery({
@@ -229,7 +221,6 @@ export default function DashboardPage() {
       toast.error('Опишіть, які ситуації ви хочете потренувати');
       return;
     }
-    setStoredGeminiApiKey(geminiApiKeyInput);
     setGeneratingPrompt(true);
 
     try {
@@ -237,7 +228,6 @@ export default function DashboardPage() {
         await generatePromptQuestionsWithAi({
           prompt: promptText.trim(),
           selectedCategories: user.selectedCategories,
-          allOfficialQuestions: questions,
           count: 10,
         });
 
@@ -372,12 +362,8 @@ export default function DashboardPage() {
         isOpen={promptModalOpen}
         promptText={promptText}
         generatingPrompt={generatingPrompt}
-        geminiApiKeyInput={geminiApiKeyInput}
-        showKeyConfig={showKeyConfig}
         onClose={() => setPromptModalOpen(false)}
         onChangePrompt={setPromptText}
-        onChangeKeyInput={setGeminiApiKeyInput}
-        onToggleKeyConfig={() => setShowKeyConfig((v) => !v)}
         onSubmit={handleGeneratePromptTest}
       />
 

@@ -5,12 +5,8 @@ interface PromptTestModalProps {
   isOpen: boolean;
   promptText: string;
   generatingPrompt: boolean;
-  geminiApiKeyInput: string;
-  showKeyConfig: boolean;
   onClose: () => void;
   onChangePrompt: (text: string) => void;
-  onChangeKeyInput: (key: string) => void;
-  onToggleKeyConfig: () => void;
   onSubmit: () => void;
 }
 
@@ -26,12 +22,8 @@ export const PromptTestModal: React.FC<PromptTestModalProps> = ({
   isOpen,
   promptText,
   generatingPrompt,
-  geminiApiKeyInput,
-  showKeyConfig,
   onClose,
   onChangePrompt,
-  onChangeKeyInput,
-  onToggleKeyConfig,
   onSubmit,
 }) => {
   if (!isOpen) return null;
@@ -83,33 +75,6 @@ export const PromptTestModal: React.FC<PromptTestModalProps> = ({
           placeholder="Опишіть, які ситуації ви хочете потренувати (наприклад: проїзд перехресть з трамваями або зупинка і стоянка)..."
           className="w-full p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-sm focus:outline-none focus:border-emerald-500"
         />
-
-        {/* Optional Gemini API Key Toggle */}
-        <div className="pt-1 border-t border-slate-100 dark:border-slate-800">
-          <button
-            type="button"
-            onClick={onToggleKeyConfig}
-            className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 underline cursor-pointer"
-          >
-            {showKeyConfig
-              ? 'Сховати налаштування Gemini API Key'
-              : 'Налаштувати власний Gemini 2.5 Flash API Key (опційно)'}
-          </button>
-          {showKeyConfig && (
-            <div className="mt-2 space-y-1">
-              <input
-                type="password"
-                value={geminiApiKeyInput}
-                onChange={(e) => onChangeKeyInput(e.target.value)}
-                placeholder="AIzaSy... (введіть ваш Gemini API Key)"
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs"
-              />
-              <p className="text-[11px] text-slate-400">
-                Питання та 2D-сцени генеруються безпосередньо моделлю Google Gemini.
-              </p>
-            </div>
-          )}
-        </div>
 
         <div className="flex justify-end gap-2.5">
           <button

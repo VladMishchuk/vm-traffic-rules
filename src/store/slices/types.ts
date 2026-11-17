@@ -34,9 +34,7 @@ export interface AuthSlice {
     photoURL: string | null;
   }) => Promise<void>;
   logout: () => void;
-  toggleUserRole: () => void;
   toggleCategory: (cat: DriverCategoryCode) => void;
-  setCategories: (cats: DriverCategoryCode[]) => void;
   updateProfileSettings: (
     patch: Partial<UserProfile['settings']> & {
       displayName?: string;
@@ -72,7 +70,6 @@ export interface TestingSlice {
     wrongQuestionIds: string[];
     ruleResults?: { ruleId: string; section: string; isCorrect: boolean }[];
   }) => void;
-  prioritizeFailedRules: (ruleIds: string[], sections: string[]) => void;
 }
 
 export interface CommunitySlice {
@@ -94,8 +91,6 @@ export interface CommunitySlice {
     reasonCategory: string,
     description: string
   ) => void;
-  resolveReport: (reportId: string) => void;
-  deleteReportedComment: (reportId: string, commentId: string) => void;
 }
 
 export interface UISlice {

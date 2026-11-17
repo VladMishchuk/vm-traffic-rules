@@ -212,34 +212,4 @@ export const createTestingSlice: StateCreator<AppState, [], [], TestingSlice> = 
         user: updatedUser,
       };
     }),
-
-  prioritizeFailedRules: (ruleIds, sections) =>
-    set((state) => {
-      const nextMap = { ...state.masteryMap };
-      const recordsToSave: RuleMasteryRecord[] = [];
-      ruleIds.forEach((rId, idx) => {
-        const sec = sections[idx] || '1';
-        const existing = nextMap[rId];
-        const record: RuleMasteryRecord = {
-          itemId: rId,
-          section: sec,
-          recentAttempts: [...(existing?.recentAttempts ?? []), false].slice(
-            -5
-          ),
-          masteryScore: Math.min(existing?.masteryScore ?? 0.2, 0.25),
-          intervalDays: 0,
-          nextReviewAt: new Date().toISOString(),
-          totalAttempts: existing?.totalAttempts ?? 1,
-          correctAttempts: existing?.correctAttempts ?? 0,
-        };
-        nextMap[rId] = record;
-        recordsToSave.push(record);
-      });
-
-      if (state.isAuthenticated && state.user.uid && recordsToSave.length > 0) {
-        batchSaveRuleMasteryToFirestore(state.user.uid, recordsToSave);
-      }
-
-      return { masteryMap: nextMap };
-    }),
 });

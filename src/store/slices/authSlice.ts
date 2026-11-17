@@ -32,7 +32,6 @@ export const DEFAULT_USER: UserProfile = {
     autoExplainOnError: true,
     defaultTopics: ['1', '8.1', '16.1', '16.2', '33'],
     theme: 'dark',
-    geminiApiKey: '',
   },
 };
 
@@ -42,18 +41,6 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (
 ) => ({
   isAuthenticated: false,
   user: DEFAULT_USER,
-
-  toggleUserRole: () =>
-    set((state) => {
-      const updatedUser: UserProfile = {
-        ...state.user,
-        role: state.user.role === 'admin' ? 'user' : 'admin',
-      };
-      if (state.isAuthenticated && updatedUser.uid) {
-        saveUserProfileToFirestore(updatedUser, state.followedUserIds);
-      }
-      return { user: updatedUser };
-    }),
 
   loginWithEmail: (email, displayName, uid) =>
     set((state) => {
@@ -212,18 +199,6 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (
       return { user: updatedUser };
     }),
 
-  setCategories: (cats) =>
-    set((state) => {
-      const updatedUser: UserProfile = {
-        ...state.user,
-        selectedCategories: cats.length > 0 ? cats : ['B'],
-      };
-      if (state.isAuthenticated && updatedUser.uid) {
-        saveUserProfileToFirestore(updatedUser, state.followedUserIds);
-      }
-      return { user: updatedUser };
-    }),
-
   updateProfileSettings: (patch) =>
     set((state) => {
       const updatedUser: UserProfile = {
@@ -237,10 +212,6 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (
             state.user.settings.autoExplainOnError,
           defaultTopics:
             patch.defaultTopics ?? state.user.settings.defaultTopics,
-          geminiApiKey:
-            patch.geminiApiKey !== undefined
-              ? patch.geminiApiKey
-              : state.user.settings.geminiApiKey,
           theme:
             patch.theme !== undefined
               ? patch.theme

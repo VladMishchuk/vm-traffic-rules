@@ -70,33 +70,6 @@ export const createCommunitySlice: StateCreator<
       };
     }),
 
-  resolveReport: (reportId) =>
-    set((state) => {
-      const targetReport = state.reports.find((r) => r.id === reportId);
-      const nextComments =
-        targetReport?.reportType === 'comment_spam'
-          ? state.commentsTable.map((c) =>
-              c.id === targetReport.targetId
-                ? { ...c, isReported: false }
-                : c
-            )
-          : state.commentsTable;
-      return {
-        commentsTable: nextComments,
-        reports: state.reports.map((r) =>
-          r.id === reportId ? { ...r, status: 'resolved' } : r
-        ),
-      };
-    }),
-
-  deleteReportedComment: (reportId, commentId) =>
-    set((state) => ({
-      commentsTable: state.commentsTable.filter((c) => c.id !== commentId),
-      reports: state.reports.map((r) =>
-        r.id === reportId ? { ...r, status: 'resolved' } : r
-      ),
-    })),
-
   setCommentsTable: (comments) => set({ commentsTable: comments }),
 
   addComment: (targetId, text) =>

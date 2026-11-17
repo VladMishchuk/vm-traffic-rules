@@ -79,21 +79,6 @@ export async function saveUserProfileToFirestore(
 }
 
 /**
- * Deletes user profile and public profile documents from Firestore.
- */
-export async function deleteUserProfileFromFirestore(uid: string): Promise<void> {
-  if (!isFirebaseConfigured || !db || !uid) return;
-  try {
-    await Promise.all([
-      deleteDoc(doc(db, 'users', uid)).catch(() => {}),
-      deleteDoc(doc(db, 'public_profiles', uid)).catch(() => {}),
-    ]);
-  } catch (err) {
-    console.warn('[Firestore] Failed to delete user profile:', err);
-  }
-}
-
-/**
  * Loads a user profile document from Firestore (`users/{uid}`).
  */
 export async function loadUserProfileFromFirestore(
