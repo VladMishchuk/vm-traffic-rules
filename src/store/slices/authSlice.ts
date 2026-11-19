@@ -11,7 +11,7 @@ import {
 import { ALL_BADGES } from './badges';
 import { AppState, AuthSlice } from './types';
 
-export const DEFAULT_USER: UserProfile = {
+const DEFAULT_USER: UserProfile = {
   uid: '',
   displayName: 'Учень ПДР',
   email: '',

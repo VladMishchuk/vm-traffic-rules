@@ -1,8 +1,6 @@
 import {
   ActiveTestConfig,
   BadgeDefinition,
-  CommunityUserProfile,
-  ContentReport,
   DriverCategoryCode,
   QuestionComment,
   RuleMasteryRecord,
@@ -75,8 +73,6 @@ export interface TestingSlice {
 export interface CommunitySlice {
   commentsTable: QuestionComment[];
   inspectedUserProfileUid: string | null;
-  reports: ContentReport[];
-  communityUsers: CommunityUserProfile[];
   followedUserIds: string[];
   openUserProfileModal: (uid: string) => void;
   closeUserProfileModal: () => void;

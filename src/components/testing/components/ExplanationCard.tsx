@@ -1,84 +1,30 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { BookOpen } from 'lucide-react';
 import { RulesDatabase } from '@/core/types';
-import { formatRuleIdLabel } from '@/lib/dataService';
+import { formatRuleIdLabel, resolveRuleEntityDetails } from '@/lib/dataService';
 import TargetDiscussionThread from '@/components/discussion/TargetDiscussionThread';
 
 interface ExplanationCardProps {
   explanation: string;
   ruleIds?: string[];
   rules?: RulesDatabase | null;
-  inspectedRuleId: string | null;
-  onToggleInspectRule: (ruleId: string) => void;
-  onCloseInspectRule: () => void;
 }
 
 export const ExplanationCard: React.FC<ExplanationCardProps> = ({
   explanation,
   ruleIds = [],
   rules,
-  inspectedRuleId,
-  onToggleInspectRule,
-  onCloseInspectRule,
 }) => {
+  const [inspectedRuleId, setInspectedRuleId] = useState<string | null>(null);
+
+  // Скидаємо відкритий інспектор при переході до іншого питання
+  useEffect(() => {
+    setInspectedRuleId(null);
+  }, [explanation]);
+
   const inspectedRuleDetails = useMemo(() => {
-    if (!inspectedRuleId || !rules) return null;
-    const cleanNum = inspectedRuleId
-      .replace(/^(rule_|sign_|marking_)/, '')
-      .replace(/_/g, '.');
-
-    for (const sec of rules.sections) {
-      for (const it of sec.items) {
-        if (
-          it.id === inspectedRuleId ||
-          it.number === inspectedRuleId ||
-          it.number === cleanNum
-        ) {
-          return {
-            title: `Пункт ${it.number} ПДР (${sec.title})`,
-            text: it.text,
-            subItems: it.sub_items,
-            image: null,
-          };
-        }
-      }
-    }
-
-    const sign = rules.signs.find(
-      (s) => s.id === inspectedRuleId || s.number === cleanNum
-    );
-    if (sign) {
-      return {
-        title: `Дорожній знак ${sign.number} «${sign.name}»`,
-        text: sign.description,
-        subItems: [],
-        image: sign.image_path,
-      };
-    }
-
-    const marking = rules.markings.find(
-      (m) => m.id === inspectedRuleId || m.number === cleanNum
-    );
-    if (marking) {
-      return {
-        title: `Дорожня розмітка ${marking.number} «${marking.name}»`,
-        text: marking.description,
-        subItems: [],
-        image: marking.image_path,
-      };
-    }
-
-    const term = rules.glossary.find((g) => g.id === inspectedRuleId);
-    if (term) {
-      return {
-        title: `Термін ПДР: «${term.term}» (п. 1.10)`,
-        text: term.definition,
-        subItems: [],
-        image: null,
-      };
-    }
-
-    return null;
+    if (!inspectedRuleId) return null;
+    return resolveRuleEntityDetails(inspectedRuleId, rules);
   }, [inspectedRuleId, rules]);
 
   return (
@@ -93,7 +39,9 @@ export const ExplanationCard: React.FC<ExplanationCardProps> = ({
             <button
               key={rId}
               type="button"
-              onClick={() => onToggleInspectRule(rId)}
+              onClick={() =>
+                setInspectedRuleId((prev) => (prev === rId ? null : rId))
+              }
               className="px-2.5 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-500 transition cursor-pointer"
             >
               {formatRuleIdLabel(rId, rules)}
@@ -115,7 +63,7 @@ export const ExplanationCard: React.FC<ExplanationCardProps> = ({
             </h4>
             <button
               type="button"
-              onClick={onCloseInspectRule}
+              onClick={() => setInspectedRuleId(null)}
               className="text-xs text-slate-400 hover:text-slate-600 cursor-pointer"
             >
               Закрити

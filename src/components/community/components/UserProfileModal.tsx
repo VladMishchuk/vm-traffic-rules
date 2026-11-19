@@ -1,5 +1,3 @@
-import React, { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import {
   X,
   Award,
@@ -9,125 +7,20 @@ import {
   ThumbsUp,
   Sparkles,
 } from 'lucide-react';
-import { toast } from 'sonner';
-import { useAppStore, ALL_BADGES } from '@/store/useAppStore';
-import { CommunityUserProfile } from '@/core/types';
-import { loadPublicProfilesFromFirestore } from '@/lib/firestoreService';
+import { ALL_BADGES } from '@/store/useAppStore';
+import { useUserProfileModal } from '../hooks/useUserProfileModal';
 
 export default function UserProfileModal() {
   const {
-    user,
-    masteryMap,
-    communityUsers,
-    followedUserIds,
-    commentsTable,
-    inspectedUserProfileUid,
+    selectedProfile,
+    authorComments,
+    isMe,
+    isFollowed,
     closeUserProfileModal,
-    toggleFollowUser,
-  } = useAppStore();
-
-  const { data: cloudProfiles = [] } = useQuery({
-    queryKey: ['public-profiles'],
-    queryFn: loadPublicProfilesFromFirestore,
-  });
-
-  const selectedProfile: CommunityUserProfile | null = useMemo(() => {
-    if (!inspectedUserProfileUid) return null;
-
-    if (inspectedUserProfileUid === user.uid) {
-      const records = Object.values(masteryMap);
-      const total = records.reduce((s, r) => s + r.totalAttempts, 0);
-      const correct = records.reduce((s, r) => s + r.correctAttempts, 0);
-      const myAccuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
-      const initials = (user.displayName || 'ВИ')
-        .split(' ')
-        .map((w) => w[0])
-        .join('')
-        .slice(0, 2)
-        .toUpperCase();
-
-      return {
-        uid: user.uid,
-        displayName: `${user.displayName} (Ви)`,
-        avatarInitials: initials,
-        selectedCategories: user.selectedCategories,
-        isPublicProfile: user.isPublicProfile,
-        streakDays: user.streakDays,
-        totalTestsCompleted: user.totalTestsCompleted,
-        perfectExamsCount: user.perfectExamsCount,
-        accuracyPercent: myAccuracy,
-        totalLikesReceived: user.totalLikesReceived,
-        followersCount: user.followersCount,
-        followingCount: followedUserIds.length,
-        unlockedBadges: user.unlockedBadges,
-        bio: 'Мій навчальний профіль у системі ПДР України AI.',
-      };
-    }
-
-    const foundInCloud = cloudProfiles.find((u) => u.uid === inspectedUserProfileUid);
-    if (foundInCloud) return foundInCloud;
-
-    const found = communityUsers.find((u) => u.uid === inspectedUserProfileUid);
-    if (found) return found;
-
-    // Fallback if comment author profile is not yet cached locally
-    const commentSample = commentsTable.find(
-      (c) => c.authorUid === inspectedUserProfileUid
-    );
-    const name = commentSample?.authorName || 'Учасник спільноти';
-    const initials = name
-      .split(' ')
-      .map((w) => w[0])
-      .join('')
-      .slice(0, 2)
-      .toUpperCase();
-
-    return {
-      uid: inspectedUserProfileUid,
-      displayName: name,
-      avatarInitials: initials,
-      selectedCategories: ['B'],
-      isPublicProfile: true,
-      streakDays: 0,
-      totalTestsCompleted: 0,
-      perfectExamsCount: 0,
-      accuracyPercent: 0,
-      totalLikesReceived: commentSample?.likes || 0,
-      followersCount: 0,
-      followingCount: 0,
-      unlockedBadges: [],
-      bio: 'Учасник спільноти ПДР України.',
-    };
-  }, [
-    inspectedUserProfileUid,
-    user,
-    masteryMap,
-    cloudProfiles,
-    communityUsers,
-    commentsTable,
-    followedUserIds,
-  ]);
-
-  const authorComments = useMemo(() => {
-    if (!selectedProfile) return [];
-    return commentsTable.filter(
-      (c) => c.authorUid === selectedProfile.uid && !c.isReported
-    );
-  }, [commentsTable, selectedProfile]);
+    handleToggleFollow,
+  } = useUserProfileModal();
 
   if (!selectedProfile) return null;
-
-  const isMe = selectedProfile.uid === user.uid;
-  const isFollowed = followedUserIds.includes(selectedProfile.uid);
-
-  const handleToggleFollow = () => {
-    toggleFollowUser(selectedProfile.uid);
-    toast.success(
-      isFollowed
-        ? `Ви відписалися від ${selectedProfile.displayName}`
-        : `Ви підписалися на ${selectedProfile.displayName}!`
-    );
-  };
 
   return (
     <div
@@ -198,99 +91,99 @@ export default function UserProfileModal() {
 
         {/* Body */}
         <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 p-3.5 rounded-2xl">
-              {selectedProfile.bio}
-            </p>
+          {selectedProfile.bio}
+        </p>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3 rounded-2xl bg-orange-500/10 text-center">
-                <div className="text-lg font-extrabold text-orange-500">
-                  {selectedProfile.streakDays} дн.
-                </div>
-                <div className="text-[11px] text-slate-500">Стрік</div>
-              </div>
-              <div className="p-3 rounded-2xl bg-emerald-500/10 text-center">
-                <div className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400">
-                  {selectedProfile.accuracyPercent}%
-                </div>
-                <div className="text-[11px] text-slate-500">Точність</div>
-              </div>
-              <div className="p-3 rounded-2xl bg-blue-500/10 text-center">
-                <div className="text-lg font-extrabold text-blue-600 dark:text-blue-400">
-                  {selectedProfile.totalTestsCompleted}
-                </div>
-                <div className="text-[11px] text-slate-500">Тестів</div>
-              </div>
-              <div className="p-3 rounded-2xl bg-violet-500/10 text-center">
-                <div className="text-lg font-extrabold text-violet-600 dark:text-violet-400">
-                  {selectedProfile.totalLikesReceived}
-                </div>
-                <div className="text-[11px] text-slate-500">Лайків</div>
-              </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="p-3 rounded-2xl bg-orange-500/10 text-center">
+            <div className="text-lg font-extrabold text-orange-500">
+              {selectedProfile.streakDays} дн.
             </div>
+            <div className="text-[11px] text-slate-500">Стрік</div>
+          </div>
+          <div className="p-3 rounded-2xl bg-emerald-500/10 text-center">
+            <div className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400">
+              {selectedProfile.accuracyPercent}%
+            </div>
+            <div className="text-[11px] text-slate-500">Точність</div>
+          </div>
+          <div className="p-3 rounded-2xl bg-blue-500/10 text-center">
+            <div className="text-lg font-extrabold text-blue-600 dark:text-blue-400">
+              {selectedProfile.totalTestsCompleted}
+            </div>
+            <div className="text-[11px] text-slate-500">Тестів</div>
+          </div>
+          <div className="p-3 rounded-2xl bg-violet-500/10 text-center">
+            <div className="text-lg font-extrabold text-violet-600 dark:text-violet-400">
+              {selectedProfile.totalLikesReceived}
+            </div>
+            <div className="text-[11px] text-slate-500">Лайків</div>
+          </div>
+        </div>
 
-            {/* Unlocked Badges */}
-            {selectedProfile.unlockedBadges.length > 0 && (
-              <div className="space-y-2">
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Відкриті досягнення ({selectedProfile.unlockedBadges.length})
-                </div>
-                <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1">
-                  {ALL_BADGES.filter((b) =>
-                    selectedProfile.unlockedBadges.includes(b.id)
-                  ).map((b) => (
-                    <div
-                      key={b.id}
-                      className="p-2.5 rounded-xl border border-amber-500/30 bg-amber-500/5 flex items-center gap-2.5"
-                    >
-                      <Award className="w-5 h-5 text-amber-500 shrink-0" />
-                      <div className="min-w-0">
-                        <div className="text-xs font-bold truncate">
-                          {b.title}
-                        </div>
-                        <div className="text-[10px] text-slate-500 truncate">
-                          {b.description}
-                        </div>
-                      </div>
+        {/* Unlocked Badges */}
+        {selectedProfile.unlockedBadges.length > 0 && (
+          <div className="space-y-2">
+            <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              Відкриті досягнення ({selectedProfile.unlockedBadges.length})
+            </div>
+            <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1">
+              {ALL_BADGES.filter((b) =>
+                selectedProfile.unlockedBadges.includes(b.id)
+              ).map((b) => (
+                <div
+                  key={b.id}
+                  className="p-2.5 rounded-xl border border-amber-500/30 bg-amber-500/5 flex items-center gap-2.5"
+                >
+                  <Award className="w-5 h-5 text-amber-500 shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold truncate">
+                      {b.title}
                     </div>
-                  ))}
+                    <div className="text-[10px] text-slate-500 truncate">
+                      {b.description}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
+              ))}
+            </div>
+          </div>
+        )}
 
-            {/* Author's Comments from commentsTable */}
-            {authorComments.length > 0 && (
-              <div className="space-y-2">
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <MessageSquare className="w-3.5 h-3.5 text-blue-500" />
-                  <span>
-                    Опубліковані коментарі та пояснення ({authorComments.length})
-                  </span>
+        {/* Author's Comments from commentsTable */}
+        {authorComments.length > 0 && (
+          <div className="space-y-2">
+            <div className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+              <MessageSquare className="w-3.5 h-3.5 text-blue-500" />
+              <span>
+                Опубліковані коментарі та пояснення ({authorComments.length})
+              </span>
+            </div>
+            <div className="space-y-2 max-h-44 overflow-y-auto pr-1">
+              {authorComments.map((c) => (
+                <div
+                  key={c.id}
+                  className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 space-y-1"
+                >
+                  <div className="flex items-center justify-between text-[11px] text-slate-400">
+                    <span className="font-mono font-semibold text-blue-600 dark:text-blue-400">
+                      {c.targetType === 'question'
+                        ? `Питання ${c.targetId.replace('q_', '#')}`
+                        : `База знань: ${c.targetId}`}
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold">
+                      <ThumbsUp className="w-3 h-3" />
+                      {c.likes}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
+                    {c.text}
+                  </p>
                 </div>
-                <div className="space-y-2 max-h-44 overflow-y-auto pr-1">
-                  {authorComments.map((c) => (
-                    <div
-                      key={c.id}
-                      className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 space-y-1"
-                    >
-                      <div className="flex items-center justify-between text-[11px] text-slate-400">
-                        <span className="font-mono font-semibold text-blue-600 dark:text-blue-400">
-                          {c.targetType === 'question'
-                            ? `Питання ${c.targetId.replace('q_', '#')}`
-                            : `База знань: ${c.targetId}`}
-                        </span>
-                        <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold">
-                          <ThumbsUp className="w-3 h-3" />
-                          {c.likes}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">
-                        {c.text}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">

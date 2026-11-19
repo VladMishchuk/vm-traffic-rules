@@ -11,7 +11,6 @@ interface QuestionCardProps {
   selectedOption: number | null;
   isStrictExam: boolean;
   shouldShowExplanation: boolean;
-  inspectedRuleId: string | null;
   currentIndex: number;
   totalQuestions: number;
   onSelectOption: (index: number) => void;
@@ -19,8 +18,6 @@ interface QuestionCardProps {
   onOpenReportModal: () => void;
   onOpenHintModal: () => void;
   onManualShowExplain: () => void;
-  onToggleInspectRule: (ruleId: string) => void;
-  onCloseInspectRule: () => void;
   onNextQuestion: () => void;
 }
 
@@ -30,7 +27,6 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   selectedOption,
   isStrictExam,
   shouldShowExplanation,
-  inspectedRuleId,
   currentIndex,
   totalQuestions,
   onSelectOption,
@@ -38,8 +34,6 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   onOpenReportModal,
   onOpenHintModal,
   onManualShowExplain,
-  onToggleInspectRule,
-  onCloseInspectRule,
   onNextQuestion,
 }) => {
   return (
@@ -94,9 +88,6 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
           explanation={question.explanation}
           ruleIds={question.rule_ids}
           rules={rules}
-          inspectedRuleId={inspectedRuleId}
-          onToggleInspectRule={onToggleInspectRule}
-          onCloseInspectRule={onCloseInspectRule}
         />
       )}
 

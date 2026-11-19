@@ -1,9 +1,5 @@
 import { StateCreator } from 'zustand';
 import {
-  ActiveTestConfig,
-  DriverCategoryCode,
-  RuleMasteryRecord,
-  TestMode,
   TestSessionRecord,
   UserProfile,
 } from '@/core/types';
@@ -14,7 +10,7 @@ import {
   batchSaveRuleMasteryToFirestore,
   saveRuleMasteryToFirestore,
 } from '@/lib/firestoreService';
-import { computeSpacedMastery } from '@/modules/adaptive-learning';
+import { computeSpacedMastery } from '@/components/analytics/algorithms/leitnerEngine';
 import { AppState, TestingSlice } from './types';
 
 export { computeSpacedMastery };

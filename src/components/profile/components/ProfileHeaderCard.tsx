@@ -1,6 +1,7 @@
 import React from 'react';
 import { Users, Flame, BookOpen, MessageSquare } from 'lucide-react';
 import { UserProfile } from '@/core/types';
+import { getAvatarInitials } from '@/core/utils/userUtils';
 
 interface ProfileHeaderCardProps {
   user: UserProfile;
@@ -13,12 +14,7 @@ export const ProfileHeaderCard: React.FC<ProfileHeaderCardProps> = ({
   followingCount,
   commentsCount,
 }) => {
-  const initials = (user.displayName || 'УП')
-    .split(' ')
-    .map((p) => p[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
+  const initials = getAvatarInitials(user.displayName, 'УП');
 
   return (
     <section className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">

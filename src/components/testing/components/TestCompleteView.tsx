@@ -18,7 +18,6 @@ interface TestCompleteViewProps {
   isStrictExam: boolean;
   failReason: ExamFailReason;
   answeredList: AnsweredEntry[];
-  elapsedSeconds: number;
   formattedTime: string;
   rules?: RulesDatabase | null;
   expandedMistakeId: string | null;

@@ -321,6 +321,91 @@ export function getAvailableSectionsForCategories(
   );
 }
 
+export interface ResolvedRuleDetails {
+  title: string;
+  shortLabel: string;
+  text: string;
+  image: string | null;
+}
+
+/**
+ * Знаходить повні деталі пункту ПДР, дорожнього знака, розмітки або терміна за технічним ідентифікатором `ruleId`.
+ */
+export function resolveRuleEntityDetails(
+  rId: string,
+  rules?: RulesDatabase | null
+): ResolvedRuleDetails | null {
+  const db = rules ?? cachedRules;
+  if (!rId || !db) return null;
+
+  const cleanNum = rId
+    .replace(/^(rule_|sign_|marking_)/, '')
+    .replace(/_/g, '.');
+
+  if (rId.startsWith('term_')) {
+    const term = db.glossary.find((g) => g.id === rId);
+    if (term) {
+      return {
+        title: `Термін ПДР: «${term.term}» (п. 1.10)`,
+        shortLabel: `Термін «${term.term}»`,
+        text: term.definition,
+        image: null,
+      };
+    }
+  }
+
+  for (const sec of db.sections) {
+    for (const it of sec.items) {
+      if (it.id === rId || it.number === rId || it.number === cleanNum) {
+        return {
+          title: `Пункт ${it.number} ПДР (${sec.title})`,
+          shortLabel: `Пункт ${it.number} ПДР`,
+          text: it.text,
+          image: null,
+        };
+      }
+    }
+  }
+
+  const sign = db.signs.find(
+    (s) => s.id === rId || s.number === cleanNum
+  );
+  if (sign) {
+    const shortName =
+      sign.name.length > 24 ? `${sign.name.slice(0, 22)}…` : sign.name;
+    return {
+      title: `Дорожній знак ${sign.number} «${sign.name}»`,
+      shortLabel: `Знак ${sign.number} «${shortName}»`,
+      text: sign.description,
+      image: sign.image_path,
+    };
+  }
+
+  const marking = db.markings.find(
+    (m) => m.id === rId || m.number === cleanNum
+  );
+  if (marking) {
+    return {
+      title: `Дорожня розмітка ${marking.number} «${marking.name}»`,
+      shortLabel: `Розмітка ${marking.number}`,
+      text: marking.description,
+      image: marking.image_path,
+    };
+  }
+
+  const term = db.glossary.find((g) => g.id === rId);
+  if (term) {
+    return {
+      title: `Термін ПДР: «${term.term}» (п. 1.10)`,
+      shortLabel: `Термін «${term.term}»`,
+      text: term.definition,
+      image: null,
+    };
+  }
+
+  return null;
+}
+
 /**
  * Converts a technical rule ID (e.g. "rule_1_10", "term_zasliplennya", "sign_2_1", "marking_1_1", "16.12")
  * into a concise, human-readable Ukrainian label using the structure of `rules.json`.
@@ -329,50 +414,10 @@ export function formatRuleIdLabel(
   rId: string,
   rules?: RulesDatabase | null
 ): string {
-  const db = rules ?? cachedRules;
   if (!rId) return 'ПДР';
 
-  if (db) {
-    // 1. Glossary terms (e.g., term_zasliplennya -> Термін «засліплення»)
-    if (rId.startsWith('term_')) {
-      const term = db.glossary.find((g) => g.id === rId);
-      if (term) return `Термін «${term.term}»`;
-    }
-
-    // 2. Road signs (e.g., sign_2_1 -> Знак 2.1 «Дати дорогу»)
-    if (rId.startsWith('sign_')) {
-      const cleanNum = rId.replace(/^sign_/, '').replace(/_/g, '.');
-      const sign = db.signs.find(
-        (s) => s.id === rId || s.number === cleanNum
-      );
-      if (sign) {
-        const shortName =
-          sign.name.length > 24 ? `${sign.name.slice(0, 22)}…` : sign.name;
-        return `Знак ${sign.number} «${shortName}»`;
-      }
-      return `Знак ${cleanNum}`;
-    }
-
-    // 3. Road markings (e.g., marking_1_1 -> Розмітка 1.1)
-    if (rId.startsWith('marking_')) {
-      const cleanNum = rId.replace(/^marking_/, '').replace(/_/g, '.');
-      const marking = db.markings.find(
-        (m) => m.id === rId || m.number === cleanNum
-      );
-      if (marking) return `Розмітка ${marking.number}`;
-      return `Розмітка ${cleanNum}`;
-    }
-
-    // 4. Rule items (e.g., rule_1_10 or "16.12" -> Пункт 1.10 ПДР)
-    const cleanRuleNum = rId.replace(/^rule_/, '').replace(/_/g, '.');
-    for (const sec of db.sections) {
-      for (const it of sec.items) {
-        if (it.id === rId || it.number === rId || it.number === cleanRuleNum) {
-          return `Пункт ${it.number} ПДР`;
-        }
-      }
-    }
-  }
+  const resolved = resolveRuleEntityDetails(rId, rules);
+  if (resolved) return resolved.shortLabel;
 
   // Graceful Ukrainian fallbacks even before rules finishes loading
   if (rId.startsWith('rule_')) {

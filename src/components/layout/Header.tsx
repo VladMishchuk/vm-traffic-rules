@@ -2,8 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   BookOpen,
-  Car,
-  Check,
   ChevronDown,
   LayoutDashboard,
   LogOut,
@@ -17,40 +15,25 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAppStore } from '@/store/useAppStore';
-import { DriverCategoryCode } from '@/core/types';
+import { getAvatarInitials } from '@/core/utils/userUtils';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 
-const ALL_CATEGORIES: DriverCategoryCode[] = [
-  'A1',
-  'A',
-  'B1',
-  'B',
-  'C1',
-  'C',
-  'D1',
-  'D',
-  'BE',
-  'C1E',
-  'CE',
-  'D1E',
-  'DE',
-  'T',
+const NAV_LINKS = [
+  { to: '/', label: 'Дашборд', icon: LayoutDashboard, exact: true },
+  { to: '/knowledge', label: 'База знань', icon: BookOpen },
+  { to: '/analytics', label: 'Аналітика', icon: BarChart3 },
+  { to: '/community', label: 'Спільнота', icon: Trophy },
+  { to: '/profile', label: 'Профіль', icon: Award },
 ];
 
 export default function Header() {
-  const {
-    theme,
-    toggleTheme,
-    user,
-    toggleCategory,
-    logout,
-  } = useAppStore();
+  const { theme, toggleTheme, user, logout } = useAppStore();
 
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [openMenu, setOpenMenu] = useState<'cats' | 'profile' | null>(null);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -59,7 +42,7 @@ export default function Header() {
         containerRef.current &&
         !containerRef.current.contains(e.target as Node)
       ) {
-        setOpenMenu(null);
+        setIsProfileMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -67,7 +50,7 @@ export default function Header() {
   }, []);
 
   const handleLogout = async () => {
-    setOpenMenu(null);
+    setIsProfileMenuOpen(false);
     if (auth) {
       try {
         await signOut(auth);
@@ -80,12 +63,7 @@ export default function Header() {
     navigate('/auth');
   };
 
-  const initials = (user.displayName || 'УП')
-    .split(' ')
-    .map((p) => p[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
+  const initials = getAvatarInitials(user.displayName, 'УП');
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md">
@@ -113,61 +91,25 @@ export default function Header() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-1">
-            <Link
-              to="/"
-              className={`px-3.5 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition ${
-                location.pathname === '/'
-                  ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70'
-              }`}
-            >
-              <LayoutDashboard className="w-4 h-4" />
-              Дашборд
-            </Link>
-            <Link
-              to="/knowledge"
-              className={`px-3.5 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition ${
-                location.pathname.startsWith('/knowledge')
-                  ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70'
-              }`}
-            >
-              <BookOpen className="w-4 h-4" />
-              База знань
-            </Link>
-            <Link
-              to="/analytics"
-              className={`px-3.5 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition ${
-                location.pathname.startsWith('/analytics')
-                  ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70'
-              }`}
-            >
-              <BarChart3 className="w-4 h-4" />
-              Аналітика
-            </Link>
-            <Link
-              to="/community"
-              className={`px-3.5 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition ${
-                location.pathname.startsWith('/community')
-                  ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70'
-              }`}
-            >
-              <Trophy className="w-4 h-4" />
-              Спільнота
-            </Link>
-            <Link
-              to="/profile"
-              className={`px-3.5 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition ${
-                location.pathname.startsWith('/profile')
-                  ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70'
-              }`}
-            >
-              <Award className="w-4 h-4" />
-              Профіль
-            </Link>
+            {NAV_LINKS.map(({ to, label, icon: Icon, exact }) => {
+              const isActive = exact
+                ? location.pathname === to
+                : location.pathname.startsWith(to);
+              return (
+                <Link
+                  key={to}
+                  to={to}
+                  className={`px-3.5 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition ${
+                    isActive
+                      ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400'
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {label}
+                </Link>
+              );
+            })}
           </nav>
         </div>
 
@@ -191,9 +133,7 @@ export default function Header() {
           {/* User Avatar & Dropdown Menu */}
           <div className="relative">
             <button
-              onClick={() =>
-                setOpenMenu(openMenu === 'profile' ? null : 'profile')
-              }
+              onClick={() => setIsProfileMenuOpen((v) => !v)}
               className="flex items-center gap-2 p-1 pr-2.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
             >
               {user.photoURL ? (
@@ -213,7 +153,7 @@ export default function Header() {
               <ChevronDown className="w-3.5 h-3.5 opacity-60" />
             </button>
 
-            {openMenu === 'profile' && (
+            {isProfileMenuOpen && (
               <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl py-2 z-50">
                 <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800">
                   <p className="text-xs font-semibold truncate">
@@ -226,7 +166,7 @@ export default function Header() {
 
                 <Link
                   to="/profile"
-                  onClick={() => setOpenMenu(null)}
+                  onClick={() => setIsProfileMenuOpen(false)}
                   className="flex items-center gap-2.5 px-4 py-2 text-xs sm:text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
                 >
                   <UserIcon className="w-4 h-4 text-slate-400" />
@@ -234,7 +174,7 @@ export default function Header() {
                 </Link>
                 <Link
                   to="/knowledge"
-                  onClick={() => setOpenMenu(null)}
+                  onClick={() => setIsProfileMenuOpen(false)}
                   className="flex items-center gap-2.5 px-4 py-2 text-xs sm:text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 md:hidden"
                 >
                   <BookOpen className="w-4 h-4 text-slate-400" />
@@ -242,7 +182,7 @@ export default function Header() {
                 </Link>
                 <Link
                   to="/community"
-                  onClick={() => setOpenMenu(null)}
+                  onClick={() => setIsProfileMenuOpen(false)}
                   className="flex items-center gap-2.5 px-4 py-2 text-xs sm:text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
                 >
                   <Trophy className="w-4 h-4 text-amber-500" />
@@ -251,7 +191,7 @@ export default function Header() {
 
                 <Link
                   to="/profile?tab=settings"
-                  onClick={() => setOpenMenu(null)}
+                  onClick={() => setIsProfileMenuOpen(false)}
                   className="flex items-center gap-2.5 px-4 py-2 text-xs sm:text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
                 >
                   <Settings className="w-4 h-4 text-slate-400" />

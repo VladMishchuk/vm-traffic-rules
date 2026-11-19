@@ -1,6 +1,7 @@
 export * from './types';
-export * from './services/ticketGenerator';
-export * from './hooks/useTestTimer';
+export * from './modes/testModeRegistry';
+export * from './hooks/useSessionTimer';
+export * from './hooks/useTestSession';
 export * from './components/TestTimer';
 export * from './components/TestProgressBar';
 export * from './components/QuestionCard';
@@ -8,7 +9,6 @@ export * from './components/QuestionMediaViewer';
 export * from './components/AnswerOptionsList';
 export * from './components/ExplanationCard';
 export * from './components/TestCompleteView';
-export * from './components/QuestionDiscussion';
 export * from './components/TestModals';
 export { default as TestPlayerPage } from './pages/TestPlayerPage';
 export { default } from './pages/TestPlayerPage';

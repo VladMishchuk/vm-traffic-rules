@@ -1,5 +1,6 @@
 export {
   DiscussionThread,
   default,
-} from '@/modules/community/components/DiscussionThread/DiscussionThread';
-export type { DiscussionThreadProps as TargetDiscussionThreadProps } from '@/modules/community/components/DiscussionThread/DiscussionThread';
+} from './components/DiscussionThread';
+export type { DiscussionThreadProps as TargetDiscussionThreadProps } from './components/DiscussionThread';
+export * from './hooks/useDiscussionThread';

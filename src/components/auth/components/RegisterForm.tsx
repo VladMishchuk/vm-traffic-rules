@@ -2,7 +2,7 @@ import React from 'react';
 import { Mail, Lock, User, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { DriverCategoryCode } from '@/core/types';
 
-export const CATEGORY_GROUPS: {
+const CATEGORY_GROUPS: {
   label: string;
   codes: DriverCategoryCode[];
   desc: string;

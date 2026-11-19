@@ -11,3 +11,9 @@ export interface ArticleMeta {
   title: string;
   testSection: string;
 }
+
+export interface SignCategoryItem {
+  id: number;
+  name: string;
+  count: number;
+}

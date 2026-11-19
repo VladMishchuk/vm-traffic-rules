@@ -1,6 +1,5 @@
 import { StateCreator } from 'zustand';
 import {
-  CommunityUserProfile,
   ContentReport,
   QuestionComment,
   UserProfile,
@@ -16,8 +15,6 @@ import {
 import { AppState, CommunitySlice } from './types';
 
 const INITIAL_COMMENTS_TABLE: QuestionComment[] = [];
-export const INITIAL_COMMUNITY_USERS: CommunityUserProfile[] = [];
-const INITIAL_REPORTS: ContentReport[] = [];
 
 export const createCommunitySlice: StateCreator<
   AppState,
@@ -27,8 +24,6 @@ export const createCommunitySlice: StateCreator<
 > = (set) => ({
   commentsTable: INITIAL_COMMENTS_TABLE,
   inspectedUserProfileUid: null,
-  reports: INITIAL_REPORTS,
-  communityUsers: INITIAL_COMMUNITY_USERS,
   followedUserIds: [],
 
   openUserProfileModal: (uid) => set({ inspectedUserProfileUid: uid }),
@@ -40,18 +35,6 @@ export const createCommunitySlice: StateCreator<
       const nextFollowed = isFollowing
         ? state.followedUserIds.filter((id) => id !== targetUid)
         : [...state.followedUserIds, targetUid];
-
-      const nextCommunity = state.communityUsers.map((u) =>
-        u.uid === targetUid
-          ? {
-              ...u,
-              followersCount: Math.max(
-                0,
-                u.followersCount + (isFollowing ? -1 : 1)
-              ),
-            }
-          : u
-      );
 
       const updatedUser: UserProfile = {
         ...state.user,
@@ -65,7 +48,6 @@ export const createCommunitySlice: StateCreator<
 
       return {
         followedUserIds: nextFollowed,
-        communityUsers: nextCommunity,
         user: updatedUser,
       };
     }),
@@ -106,7 +88,6 @@ export const createCommunitySlice: StateCreator<
 
   voteComment: (_targetId, commentId, vote) =>
     set((state) => {
-      let authorUidToUpdate: string | null = null;
       let likesDelta = 0;
       let dislikesDelta = 0;
 
@@ -117,7 +98,6 @@ export const createCommunitySlice: StateCreator<
         const dLikes = vote === 1 ? 1 : prevVote === 1 ? -1 : 0;
         const dDislikes =
           vote === -1 ? 1 : prevVote === -1 ? -1 : 0;
-        authorUidToUpdate = c.authorUid;
         likesDelta = dLikes;
         dislikesDelta = dDislikes;
         return {
@@ -132,24 +112,8 @@ export const createCommunitySlice: StateCreator<
         voteCommentInFirestore(commentId, likesDelta, dislikesDelta);
       }
 
-      const nextCommunity =
-        authorUidToUpdate && likesDelta !== 0
-          ? state.communityUsers.map((u) =>
-              u.uid === authorUidToUpdate
-                ? {
-                    ...u,
-                    totalLikesReceived: Math.max(
-                      0,
-                      u.totalLikesReceived + likesDelta
-                    ),
-                  }
-                : u
-            )
-          : state.communityUsers;
-
       return {
         commentsTable: nextTable,
-        communityUsers: nextCommunity,
       };
     }),
 
@@ -170,24 +134,19 @@ export const createCommunitySlice: StateCreator<
       submitReportToFirestore(report);
       return {
         commentsTable: nextTable,
-        reports: [report, ...state.reports],
       };
     }),
 
-  reportQuestionError: (questionId, reasonCategory, description) =>
-    set((state) => {
-      const report: ContentReport = {
-        id: `qrep_${Date.now()}`,
-        reportType: 'question_error',
-        targetId: questionId,
-        reasonCategory,
-        description,
-        createdAt: new Date().toISOString(),
-        status: 'pending',
-      };
-      submitReportToFirestore(report);
-      return {
-        reports: [report, ...state.reports],
-      };
-    }),
+  reportQuestionError: (questionId, reasonCategory, description) => {
+    const report: ContentReport = {
+      id: `qrep_${Date.now()}`,
+      reportType: 'question_error',
+      targetId: questionId,
+      reasonCategory,
+      description,
+      createdAt: new Date().toISOString(),
+      status: 'pending',
+    };
+    submitReportToFirestore(report);
+  },
 });

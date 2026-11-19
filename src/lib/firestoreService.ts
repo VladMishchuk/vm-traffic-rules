@@ -23,6 +23,7 @@ import {
   ContentReport,
   CommunityUserProfile,
 } from '@/core/types';
+import { getAvatarInitials } from '@/core/utils/userUtils';
 
 /**
  * Saves or updates a user profile document in Firestore (`users/{uid}`)
@@ -53,7 +54,7 @@ export async function saveUserProfileToFirestore(
         {
           uid: user.uid,
           displayName: user.displayName,
-          avatarInitials: user.displayName.slice(0, 2).toUpperCase(),
+          avatarInitials: getAvatarInitials(user.displayName),
           photoURL: user.photoURL || null,
           selectedCategories: user.selectedCategories,
           isPublicProfile: true,

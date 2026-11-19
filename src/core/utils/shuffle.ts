@@ -1,5 +1,5 @@
 /**
- * Чесне тасування масиву за алгоритмом Фішера-Йейтса (Knuth / Fisher-Yates shuffle).
+ * Алгоритм перемішування Фішера-Йейтса (Knuth / Fisher-Yates shuffle).
  * Забезпечує математично рівномірний розподіл перестановок O(n) без зміщення.
  */
 export function shuffleArray<T>(array: readonly T[]): T[] {
